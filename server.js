@@ -18,6 +18,7 @@ const PROJECT_ID = process.env.UPSTAGE_PROJECT_ID || "proj_8uY97TAdGoWr6c3TLfTjR
 const AGENT_ID = process.env.UPSTAGE_AGENT_ID || "agt_iUvTh2qfYA3gouJddewP8U";
 const CONFIG_ID = process.env.UPSTAGE_CONFIG_ID;
 const PUBLIC_DIR = path.join(__dirname, "public");
+const documentExtensions = new Set([".pdf", ".jpg", ".jpeg", ".png"]);
 const allowedExtensions = new Set([
   "pdf", "jpg", "jpeg", "png", "bmp", "tiff", "heic", "docx", "pptx", "xlsx",
   "mp4", "mov", "m4v", "avi", "mkv", "webm", "wmv", "flv", "mpg", "mpeg", "3gp"
@@ -97,10 +98,10 @@ async function readMultipartFiles(req) {
     req.pipe(form);
   });
   if (files.length < 1 || files.length > 2) {
-    throw new Error("청구서·영수증 합본 PDF 1개, 또는 청구서와 영수증 PDF 2개를 선택해 주세요.");
+    throw new Error("청구서·영수증 합본 1개, 또는 청구서와 영수증 2개를 선택해 주세요.");
   }
-  if (files.some((file) => path.extname(file.filename).toLowerCase() !== ".pdf")) {
-    throw new Error("PDF 파일만 올릴 수 있습니다.");
+  if (files.some((file) => !documentExtensions.has(path.extname(file.filename).toLowerCase()))) {
+    throw new Error("PDF 또는 사진(JPG, PNG) 파일만 올릴 수 있습니다.");
   }
   return files;
 }
@@ -109,9 +110,20 @@ async function analyzeDocuments(req) {
   const files = await readMultipartFiles(req);
   const mergedPdf = await PDFDocument.create();
   for (const file of files) {
-    const sourcePdf = await PDFDocument.load(file.buffer);
-    const pages = await mergedPdf.copyPages(sourcePdf, sourcePdf.getPageIndices());
-    pages.forEach((page) => mergedPdf.addPage(page));
+    const extension = path.extname(file.filename).toLowerCase();
+    if (extension === ".pdf") {
+      const sourcePdf = await PDFDocument.load(file.buffer);
+      const pages = await mergedPdf.copyPages(sourcePdf, sourcePdf.getPageIndices());
+      pages.forEach((page) => mergedPdf.addPage(page));
+      continue;
+    }
+    // 촬영한 사진은 A4 폭(595pt)에 맞춘 PDF 한 페이지로 바꿔서 합친다.
+    const image = extension === ".png"
+      ? await mergedPdf.embedPng(file.buffer)
+      : await mergedPdf.embedJpg(file.buffer);
+    const height = image.height * (595 / image.width);
+    const page = mergedPdf.addPage([595, height]);
+    page.drawImage(image, { x: 0, y: 0, width: 595, height });
   }
   const mergedBuffer = Buffer.from(await mergedPdf.save());
   const body = new FormData();

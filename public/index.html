@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>미션 2 | 청구서·영수증 검증</title>
-  <link rel="stylesheet" href="/styles.css?v=6">
+  <link rel="stylesheet" href="/styles.css?v=7">
 </head>
 <body>
   <header class="topbar">
@@ -36,23 +36,29 @@
       </div>
       <div class="upload-grid">
         <label class="upload-card combined" data-type="combined" hidden>
-          <input type="file" accept=".pdf">
+          <input type="file" class="file-input" accept=".pdf,.jpg,.jpeg,.png,image/jpeg,image/png">
           <span class="file-icon">IN+RE</span><span class="upload-label">청구서 + 영수증</span>
-          <strong>두 문서가 함께 들어있는 PDF를 끌어다 놓거나<br><u>클릭해서 선택</u></strong><small>PDF 파일 · 최대 500MB</small>
+          <strong>두 문서가 함께 담긴 PDF나 사진을 끌어다 놓거나<br><u>클릭해서 선택</u></strong><small>PDF · 사진(JPG, PNG) · 최대 500MB</small>
+          <button type="button" class="camera-button"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.5"/></svg>카메라로 촬영</button>
+          <input type="file" class="camera-input" accept="image/*" capture="environment" hidden>
           <span class="selected-file"></span>
           <button type="button" class="remove-file" aria-label="파일 취소" hidden>×</button>
         </label>
         <label class="upload-card" data-type="invoice">
-          <input type="file" accept=".pdf">
+          <input type="file" class="file-input" accept=".pdf,.jpg,.jpeg,.png,image/jpeg,image/png">
           <span class="file-icon">IN</span><span class="upload-label">청구서</span>
-          <strong>파일을 끌어다 놓거나<br><u>클릭해서 선택</u></strong><small>PDF 파일 · 최대 500MB</small>
+          <strong>파일을 끌어다 놓거나<br><u>클릭해서 선택</u></strong><small>PDF · 사진(JPG, PNG) · 최대 500MB</small>
+          <button type="button" class="camera-button"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.5"/></svg>카메라로 촬영</button>
+          <input type="file" class="camera-input" accept="image/*" capture="environment" hidden>
           <span class="selected-file"></span>
           <button type="button" class="remove-file" aria-label="파일 취소" hidden>×</button>
         </label>
         <label class="upload-card" data-type="receipt">
-          <input type="file" accept=".pdf">
+          <input type="file" class="file-input" accept=".pdf,.jpg,.jpeg,.png,image/jpeg,image/png">
           <span class="file-icon receipt">RE</span><span class="upload-label">영수증</span>
-          <strong>파일을 끌어다 놓거나<br><u>클릭해서 선택</u></strong><small>PDF 파일 · 최대 500MB</small>
+          <strong>파일을 끌어다 놓거나<br><u>클릭해서 선택</u></strong><small>PDF · 사진(JPG, PNG) · 최대 500MB</small>
+          <button type="button" class="camera-button"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.5"/></svg>카메라로 촬영</button>
+          <input type="file" class="camera-input" accept="image/*" capture="environment" hidden>
           <span class="selected-file"></span>
           <button type="button" class="remove-file" aria-label="파일 취소" hidden>×</button>
         </label>
@@ -80,6 +86,6 @@
       <button class="secondary-button" id="reset-button">새 문서 검증하기</button>
     </section>
   </main>
-  <script src="/app.js?v=16"></script>
+  <script src="/app.js?v=17"></script>
 </body>
 </html>

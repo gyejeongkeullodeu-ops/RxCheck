@@ -1,5 +1,6 @@
 const state = { locked: false, mode: "separate", files: { invoice: null, receipt: null, combined: null } };
-const allowedExtensions = ["pdf"];
+const allowedExtensions = ["pdf", "jpg", "jpeg", "png"];
+const MAX_IMAGE_SIDE = 2400;
 const $ = (selector) => document.querySelector(selector);
 
 const modeHints = {
@@ -45,16 +46,24 @@ function setLocked(locked) {
 }
 
 document.querySelectorAll(".upload-card").forEach((card) => {
-  const input = card.querySelector("input");
+  const input = card.querySelector(".file-input");
+  const cameraInput = card.querySelector(".camera-input");
   const type = card.dataset.type;
   card.addEventListener("click", (event) => {
     if (state.locked) { event.preventDefault(); return; }
+    if (event.target === cameraInput) return;
+    if (event.target.closest(".camera-button")) {
+      event.preventDefault();
+      cameraInput.click();
+      return;
+    }
     if (event.target !== input) {
       event.preventDefault();
       input.click();
     }
   });
   input.addEventListener("change", () => setFile(type, input.files[0], card));
+  cameraInput.addEventListener("change", () => setFile(type, cameraInput.files[0], card));
   ["dragenter", "dragover"].forEach((event) => card.addEventListener(event, (e) => {
     e.preventDefault(); if (!state.locked) card.classList.add("dragging");
   }));
@@ -72,19 +81,20 @@ document.querySelectorAll(".upload-card").forEach((card) => {
 function clearFile(type, card) {
   if (state.locked) return;
   state.files[type] = null;
-  card.querySelector("input").value = "";
+  card.querySelectorAll("input").forEach((field) => { field.value = ""; });
   card.querySelector(".selected-file").textContent = "";
   card.querySelector(".remove-file").hidden = true;
   card.classList.remove("uploaded");
   updateAnalyzeButton();
 }
 
-function setFile(type, file, card) {
+async function setFile(type, file, card) {
   if (!file || state.locked) return;
   const extension = file.name.split(".").pop().toLowerCase();
   const message = $("#status-message");
-  if (!allowedExtensions.includes(extension)) {
-    message.textContent = "PDF 파일만 올릴 수 있습니다.";
+  const isImage = file.type.startsWith("image/");
+  if (!allowedExtensions.includes(extension) && !isImage) {
+    message.textContent = "PDF 또는 사진(JPG, PNG) 파일만 올릴 수 있습니다.";
     message.style.color = "var(--red)";
     return;
   }
@@ -93,6 +103,18 @@ function setFile(type, file, card) {
     message.style.color = "var(--red)";
     return;
   }
+  if (isImage) {
+    try {
+      message.textContent = "사진을 준비하고 있습니다...";
+      message.style.color = "";
+      file = await imageToJpeg(file, type);
+    } catch {
+      message.textContent = "사진을 읽지 못했습니다. JPG나 PNG로 다시 시도해 주세요.";
+      message.style.color = "var(--red)";
+      return;
+    }
+    if (state.locked) return;
+  }
   state.files[type] = file;
   card.querySelector(".selected-file").textContent = `✓ ${file.name}`;
   card.querySelector(".remove-file").hidden = false;
@@ -100,6 +122,36 @@ function setFile(type, file, card) {
   message.textContent = "";
   message.style.color = "";
   updateAnalyzeButton();
+}
+
+// 휴대폰 사진은 용량이 커서, 문서 판독에 충분한 해상도의 JPG로 줄여서 올린다.
+async function imageToJpeg(file, type) {
+  const url = URL.createObjectURL(file);
+  try {
+    const image = await new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+      img.src = url;
+    });
+    const scale = Math.min(1, MAX_IMAGE_SIDE / Math.max(image.naturalWidth, image.naturalHeight));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.round(image.naturalWidth * scale);
+    canvas.height = Math.round(image.naturalHeight * scale);
+    const context = canvas.getContext("2d");
+    context.fillStyle = "#fff";
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+    const blob = await new Promise((resolve, reject) =>
+      canvas.toBlob((result) => (result ? resolve(result) : reject()), "image/jpeg", 0.88));
+    const labels = { invoice: "청구서", receipt: "영수증", combined: "청구서+영수증" };
+    const baseName = file.name && !/^image\.\w+$/i.test(file.name)
+      ? file.name.replace(/\.[^.]+$/, "")
+      : `${labels[type]}_촬영`;
+    return new File([blob], `${baseName}.jpg`, { type: "image/jpeg" });
+  } finally {
+    URL.revokeObjectURL(url);
+  }
 }
 
 const sampleFiles = {
