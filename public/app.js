@@ -40,7 +40,7 @@ function updateAnalyzeButton() {
 function setLocked(locked) {
   state.locked = locked;
   $(".workspace").classList.toggle("locked", locked);
-  document.querySelectorAll(".upload-card input, .remove-file, .mode-option").forEach((el) => { el.disabled = locked; });
+  document.querySelectorAll(".upload-card input, .remove-file, .mode-option, #sample-button").forEach((el) => { el.disabled = locked; });
   document.querySelectorAll(".upload-card").forEach((card) => card.classList.remove("dragging"));
 }
 
@@ -102,6 +102,38 @@ function setFile(type, file, card) {
   updateAnalyzeButton();
 }
 
+const sampleFiles = {
+  invoice: { url: "/examples/sample-invoice.pdf", name: "예시_처방전.pdf" },
+  receipt: { url: "/examples/sample-receipt.pdf", name: "예시_영수증.pdf" },
+  combined: { url: "/examples/sample-combined.pdf", name: "예시_처방전+영수증.pdf" }
+};
+
+async function loadSampleFiles() {
+  if (state.locked) return;
+  const button = $("#sample-button");
+  const message = $("#status-message");
+  button.disabled = true;
+  button.textContent = "예시 문서 불러오는 중...";
+  try {
+    const entries = await Promise.all(Object.entries(sampleFiles).map(async ([type, sample]) => {
+      const response = await fetch(sample.url);
+      if (!response.ok) throw new Error();
+      const blob = await response.blob();
+      return [type, new File([blob], sample.name, { type: "application/pdf" })];
+    }));
+    entries.forEach(([type, file]) => setFile(type, file, $(`.upload-card[data-type="${type}"]`)));
+    message.textContent = "예시 문서를 불러왔습니다. 검증하기 버튼을 눌러보세요.";
+    message.style.color = "";
+  } catch {
+    message.textContent = "예시 문서를 불러오지 못했습니다.";
+    message.style.color = "var(--red)";
+  } finally {
+    button.disabled = state.locked;
+    button.textContent = "예시 문서로 체험하기";
+  }
+}
+
+$("#sample-button").addEventListener("click", loadSampleFiles);
 $("#analyze-button").addEventListener("click", analyze);
 $("#reset-button").addEventListener("click", () => window.location.reload());
 

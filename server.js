@@ -169,6 +169,7 @@ function serveStatic(req, res) {
     }
     const type = path.extname(filePath) === ".html" ? "text/html; charset=utf-8"
       : path.extname(filePath) === ".css" ? "text/css; charset=utf-8"
+      : path.extname(filePath) === ".pdf" ? "application/pdf"
       : "application/javascript; charset=utf-8";
     res.writeHead(200, {
       "Content-Type": type,

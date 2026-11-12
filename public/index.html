@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>미션 2 | 청구서·영수증 검증</title>
-  <link rel="stylesheet" href="/styles.css?v=4">
+  <link rel="stylesheet" href="/styles.css?v=5">
 </head>
 <body>
   <header class="topbar">
@@ -27,9 +27,12 @@
         <div><span class="step">STEP 01</span><h2>검증할 문서를 올려주세요</h2></div>
         <p id="upload-hint">청구서와 영수증 PDF를 각각 올려주세요.</p>
       </div>
-      <div class="mode-toggle" role="tablist" aria-label="업로드 방식">
-        <button type="button" class="mode-option active" data-mode="separate" role="tab" aria-selected="true">따로 올리기</button>
-        <button type="button" class="mode-option" data-mode="combined" role="tab" aria-selected="false">한 파일로 올리기</button>
+      <div class="upload-toolbar">
+        <div class="mode-toggle" role="tablist" aria-label="업로드 방식">
+          <button type="button" class="mode-option active" data-mode="separate" role="tab" aria-selected="true">따로 올리기</button>
+          <button type="button" class="mode-option" data-mode="combined" role="tab" aria-selected="false">한 파일로 올리기</button>
+        </div>
+        <button type="button" class="sample-button" id="sample-button">예시 문서로 체험하기</button>
       </div>
       <div class="upload-grid">
         <label class="upload-card combined" data-type="combined" hidden>
@@ -78,6 +81,6 @@
     </section>
   </main>
   <footer>미션 2 · AI 기반 청구서·영수증 정합성 검증 프로토타입</footer>
-  <script src="/app.js?v=15"></script>
+  <script src="/app.js?v=16"></script>
 </body>
 </html>
