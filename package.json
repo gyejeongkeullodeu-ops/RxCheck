@@ -1,0 +1,17 @@
+{
+  "name": "mission-2-document-review",
+  "version": "1.0.0",
+  "private": true,
+  "description": "미션 2 청구서·영수증 정합성 검증 서비스",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "busboy": "^1.6.0",
+    "pdf-lib": "^1.17.1"
+  }
+}
